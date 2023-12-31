@@ -21,7 +21,7 @@ const createToken = (id) => {
 const login = async (email, password) => {
   const user = await User.findOne({ email })
   if (user) {
-    const auth = bcrypt.compare(password, user.password)
+    const auth = await bcrypt.compare(password, user.password)
     if (auth) {
       return user
     }
