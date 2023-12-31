@@ -104,4 +104,8 @@ router.get('/login', async (req, res, next) => {
   res.render('login', { form: [], errors: [], loginError: [] })
 });
 
+router.get('/logout', function (req, res) {
+  res.cookie('jwt', '', { maxAge: 1 })
+  res.redirect('/')
+})
 module.exports = router;
