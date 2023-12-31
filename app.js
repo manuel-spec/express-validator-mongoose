@@ -1,15 +1,16 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 require('dotenv').config()
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var session = require('express-session')
-var passport = require('passport')
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const session = require('express-session')
+const passport = require('passport')
 
-var app = express();
+
+const app = express();
 const mongoose = require('mongoose')
 
 db_uri = 'mongodb+srv://' + process.env.DATABASE_USER + ':' + process.env.DATABASE_PASSWORD + '@cluster0.dtbumxa.mongodb.net/' + process.env.DATABASE_NAME

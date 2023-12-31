@@ -48,6 +48,7 @@ router.post('/register', body('username').notEmpty().escape().withMessage('usern
           password: hash
         })
         user.save()
+        console.log(user)
       });
     });
 
