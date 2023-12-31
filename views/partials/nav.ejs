@@ -1,0 +1,10 @@
+<nav class="flex flex-row p-3 border">
+    <div class="p-3"><a href="/">Home</a></div>
+    
+    <%if (isLoggedIn) {%>
+        <div class="p-3"><a href="/dashboard">Dashboard</a></div>
+    <%} else {%>
+        <div class="p-3"><a href="users/login">Login</a></div>
+        <div class="p-3"><a href="users/register">Register</a></div>
+    <%}%>
+</nav>

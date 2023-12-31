@@ -3,10 +3,8 @@ var router = express.Router();
 const { body, validationResult, matchedData } = require('express-validator')
 const User = require('../models/User');
 const bcrypt = require('bcrypt')
+const { auth } = require('../middleware/auth')
 
-const localStrategy = require('passport-local');
-const { route } = require('.');
-const dd = require('var_dump')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
@@ -39,7 +37,7 @@ router.post('/login', body('email').notEmpty().isEmail().escape().withMessage('v
       const user = await login(req.body.email, req.body.password)
       const token = createToken(user._id)
       res.cookie('jwt', token, { maxAge: expiresAt * 1000, httpOnly: true })
-      res.status(200).json({ user: user._id })
+      res.status(200).redirect('/dashboard')
     } catch (error) {
       console.log(error.message)
       res.status(400).render('login', { form: [], errors: [], loginError: error.message })
@@ -51,12 +49,16 @@ router.post('/login', body('email').notEmpty().isEmail().escape().withMessage('v
 
 })
 
-router.get('/register', function (req, res, next) {
-  res.render('register', { form: [], error: [] });
+router.get('/register', async (req, res, next) => {
+  const isLoggedIn = await auth(req, res)
+  if (isLoggedIn) {
+    res.redirect('/dashboard')
+  }
+  res.render('register', { loginError: [], form: [], error: [] });
 });
 
 
-router.post('/register', body('username').notEmpty().escape().withMessage('username is required !'), body('email').isEmail().trim().withMessage("valid email is required !"), body('password').isLength({ min: 8 }), function (req, res) {
+router.post('/register', body('username').notEmpty().escape().withMessage('username is required !'), body('email').isEmail().trim().withMessage("valid email is required !"), body('password').isLength({ min: 8 }), async (req, res) => {
   const result = validationResult(req)
   const body = req.body
 
@@ -64,23 +66,28 @@ router.post('/register', body('username').notEmpty().escape().withMessage('usern
   if (result.isEmpty()) {
     const data = matchedData(req)
 
-    bcrypt.genSalt(10, function (err, salt) {
-      bcrypt.hash(data["password"], salt, function (err, hash) {
-        const user = new User({
-          username: data["username"],
-          email: data["email"],
-          password: hash
-        })
-        user.save()
-        const token = createToken(user._id)
-        res.cookie('jwt', token, { maxAge: expiresAt * 1000, httpOnly: true })
-        return res.status(201).send({ token: token })
+    const user = await User.findOne({ email: data["email"] })
+    if (user) {
+      res.render('register', { error: [], loginError: "email already exists", form: [] })
+    } else {
+      bcrypt.genSalt(10, function (err, salt) {
+        bcrypt.hash(data["password"], salt, function (err, hash) {
+          const user = new User({
+            username: data["username"],
+            email: data["email"],
+            password: hash
+          })
+          user.save()
+          const token = createToken(user._id)
+          res.cookie('jwt', token, { maxAge: expiresAt * 1000, httpOnly: true })
+          return res.status(201).redirect('/dashboard')
+        });
       });
-    });
+    }
 
 
   } else {
-    res.render('register', { error: result["errors"], form: [] })
+    res.render('register', { loginError: [], error: result["errors"], form: [] })
   }
 })
 
@@ -89,7 +96,11 @@ router.get('/find', function (req, res) {
   res.send({ users: user })
 })
 
-router.get('/login', function (req, res, next) {
+router.get('/login', async (req, res, next) => {
+  const isLoggedIn = await auth(req, res)
+  if (isLoggedIn) {
+    res.redirect('/dashboard')
+  }
   res.render('login', { form: [], errors: [], loginError: [] })
 });
 
