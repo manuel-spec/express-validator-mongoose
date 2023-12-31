@@ -37,12 +37,16 @@ router.post('/login', body('email').notEmpty().isEmail().escape().withMessage('v
   if (result.isEmpty()) {
     try {
       const user = await login(req.body.email, req.body.password)
+      const token = createToken(user._id)
+      res.cookie('jwt', token, { maxAge: expiresAt * 1000, httpOnly: true })
       res.status(200).json({ user: user._id })
     } catch (error) {
-      res.status(400).json({})
+      console.log(error.message)
+      res.status(400).render('login', { form: [], errors: [], loginError: error.message })
+
     }
   } else {
-    res.render('Login', { errors: result["errors"], form: [] })
+    res.render('Login', { errors: result["errors"], form: [], loginError: [] })
   }
 
 })
@@ -86,7 +90,7 @@ router.get('/find', function (req, res) {
 })
 
 router.get('/login', function (req, res, next) {
-  res.render('login', { form: [], errors: [] })
+  res.render('login', { form: [], errors: [], loginError: [] })
 });
 
 module.exports = router;
