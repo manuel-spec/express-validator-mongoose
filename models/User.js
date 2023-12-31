@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
-
+const { isEmail } = require('validator')
 
 const userSchema = mongoose.Schema({
     username: {
         type: String,
-        required: true
+        required: [true]
     },
     email: {
         type: String,
@@ -15,6 +15,15 @@ const userSchema = mongoose.Schema({
         required: true
     }
 }, { timestamps: true })
+
+userSchema.statics.login = async (email, password) => {
+    const user = this.findOne({ email })
+    if (user) {
+        console.log("user exists")
+    } else {
+        console.log("user doesn't exists")
+    }
+}
 
 const User = mongoose.model('User', userSchema)
 

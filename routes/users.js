@@ -7,21 +7,30 @@ const passport = require('passport')
 const localStrategy = require('passport-local');
 const { route } = require('.');
 const dd = require('var_dump')
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
 
 // const auth = require('./auth/authUser')
 /* GET users listing. */
+const expiresAt = 3 * 60 * 60 * 24
 
-router.post('/login', body('username').notEmpty().escape().withMessage('username is required'), body('password').notEmpty().escape().withMessage('password is required'), function (req, res) {
+const createToken = (id) => {
+  return jwt.sign({ id }, process.env.COOKIE_SECRET, { expiresIn: expiresAt })
+}
+
+const login = async (email, password) => {
+  const user = await User.findOne({ email })
+  if (user) {
+    console.log("user exists")
+  } else {
+    console.log("user doesn't exists")
+  }
+}
+
+router.post('/login', body('email').notEmpty().isEmail().escape().withMessage('valid email is required !'), body('password').notEmpty().escape().withMessage('password is required'), function (req, res) {
   const result = validationResult(req)
   if (result.isEmpty()) {
-    const { username, password } = req.body
-    const user = User.findOne({ username: username })
-    passport.use(new localStrategy(function auth(username, password, done) {
-      const user = User.findOne({ username: username })
-      console.log(user)
-      done(null, user)
-    }
-    ))
+    login(req.body.email, req.body.password)
   } else {
     res.render('Login', { errors: result["errors"], form: [] })
   }
@@ -37,6 +46,7 @@ router.post('/register', body('username').notEmpty().escape().withMessage('usern
   const result = validationResult(req)
   const body = req.body
 
+
   if (result.isEmpty()) {
     const data = matchedData(req)
 
@@ -48,14 +58,15 @@ router.post('/register', body('username').notEmpty().escape().withMessage('usern
           password: hash
         })
         user.save()
-        console.log(user)
+        const token = createToken(user._id)
+        res.cookie('jwt', token, { maxAge: expiresAt * 1000, httpOnly: true })
+        return res.status(201).send({ token: token })
       });
     });
 
 
-    return res.redirect('/')
   } else {
-    res.render('index', { error: result["errors"], form: [] })
+    res.render('register', { error: result["errors"], form: [] })
   }
 })
 
