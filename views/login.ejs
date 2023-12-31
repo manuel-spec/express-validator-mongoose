@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="/stylesheets/style.css">
+<div class="grid grid-cols-3">
+     
+
+    <div></div>
+    <div>
+      
+      <form action=" " method="post" class="flex flex-col">
+        <div class="flex flex-col p-3">
+          <h1 class="text-center text-4xl text-bold">Login</h1>
+        </div>
+        <div class="flex flex-col">
+          <% for (const key in form) {%>
+            <div>
+              <%= form[key] %>
+            </div>
+         <% } %>
+
+        <%errors.forEach(element => {%>
+          <div class="flex flex-col  w-full">
+            <p class=" border bg-red-400 rounded-xl text-center p-2"> <%= element["msg"] %></p>
+           
+          </div>
+        <% });%>
+        </div>
+        <div class="flex flex-col p-3">
+          <label for="">username:</label>
+          <input type="text" class="border p-2 rounded-xl" name="username">
+        </div>
+        <div class="flex flex-col p-3">
+          <label for="">password:</label>
+          <input type="password" class="border p-2 rounded-xl" name="password">
+        </div>
+        
+       <div class="flex flex-col p-3">
+        <input type="submit" value="submit" class="border p-2 mt-2 bg-blue-600 text-white rounded-xl ">
+       </div>
+       <div class="flex flex-row p-3">
+    
+         <div class="flex ml-3">
+          <a href="/users/register">Register</a>
+         </div>
+       </div>
+      
+      </form>  
+    </div>
+    <div></div>
+  </div>
