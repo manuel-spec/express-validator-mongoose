@@ -3,7 +3,7 @@ var router = express.Router();
 const { body, validationResult, matchedData } = require('express-validator')
 const User = require('../models/User');
 const bcrypt = require('bcrypt')
-const passport = require('passport')
+
 const localStrategy = require('passport-local');
 const { route } = require('.');
 const dd = require('var_dump')
@@ -21,16 +21,26 @@ const createToken = (id) => {
 const login = async (email, password) => {
   const user = await User.findOne({ email })
   if (user) {
-    console.log("user exists")
-  } else {
-    console.log("user doesn't exists")
+    const auth = bcrypt.compare(password, user.password)
+    if (auth) {
+      return user
+    }
+    throw Error("incorrect password")
+
   }
+  throw Error("email doesn't exist")
+
 }
 
-router.post('/login', body('email').notEmpty().isEmail().escape().withMessage('valid email is required !'), body('password').notEmpty().escape().withMessage('password is required'), function (req, res) {
+router.post('/login', body('email').notEmpty().isEmail().escape().withMessage('valid email is required !'), body('password').notEmpty().escape().withMessage('password is required'), async (req, res) => {
   const result = validationResult(req)
   if (result.isEmpty()) {
-    login(req.body.email, req.body.password)
+    try {
+      const user = await login(req.body.email, req.body.password)
+      res.status(200).json({ user: user._id })
+    } catch (error) {
+      res.status(400).json({})
+    }
   } else {
     res.render('Login', { errors: result["errors"], form: [] })
   }
