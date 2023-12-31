@@ -25,7 +25,8 @@ const auth = async (req, res) => {
     if (token) {
         try {
             const decodedToken = await jwt.verify(token, process.env.COOKIE_SECRET);
-            return true;  // Token is valid
+
+            return true;
         } catch (error) {
             return false;  // Token verification failed
         }
